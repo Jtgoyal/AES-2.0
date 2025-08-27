@@ -1,35 +1,46 @@
-Automated Essay Scoring (AES)
+# Automated Essay Scoring Project
 
-🚀 An implementation of Automated Essay Scoring using a hybrid approach that combines transformer-based embeddings (DeBERTa-v3) with gradient boosting models (LightGBM, XGBoost, CatBoost).
-The system predicts essay scores automatically and achieves strong agreement with human raters.
+This project presents a robust solution for the Automated Essay Scoring 2 Kaggle competition. The approach combines a deep learning model (Deberta) with a traditional gradient boosting model (LightGBM) to achieve high-performance essay scoring.
 
-📌 Overview
+## 📦 Deliverables
 
-Essay scoring is a subjective and time-consuming task for educators. This project leverages state-of-the-art NLP models to evaluate essays with high reliability.
-The workflow integrates:
+* **Jupyter Notebook (`0-818-deberta-v3-large-lgbm-baseline.ipynb`):** The primary deliverable, containing the full code for data processing, model training, and inference.
+* **Submission File (`submission.csv`):** The final output file with essay IDs and their predicted scores, ready for submission to the competition.
+* **Trained Models:** The script generates and saves trained LightGBM models for each cross-validation fold.
 
-DeBERTa-v3-base embeddings for rich contextual essay representation.
+## 📈 Methodology & Results
 
-Gradient boosting models (LightGBM, XGBoost, CatBoost) for robust regression-based scoring.
+The project follows a multi-stage process to build and ensemble the models. The methodology focuses on extracting meaningful features from the text and leveraging the strengths of both neural networks and traditional machine learning algorithms.
 
-Ensemble learning to boost performance and reduce variance.
+### Process Flow
 
-🛠️ Features
+1.  **Data Preprocessing:**
+    * The `full_text` data is cleaned by converting it to lowercase, removing HTML tags, numbers, and multiple spaces.
+    * Sentences and paragraphs are segmented for feature engineering.
 
-Preprocessing pipeline for essay text.
+2.  **Feature Engineering:**
+    * **Paragraph-level Features:** The number of paragraphs, their length, word count, sentence count, and spelling errors are calculated.
+    * **Sentence-level Features:** The length and word count of sentences are computed.
+    * **Word-level Features:** The length of each word and the count of words with specific lengths are calculated.
 
-Transformer-based feature extraction (DeBERTa-v3).
+3.  **Vectorization:**
+    * **TfidfVectorizer:** Used to capture the importance of n-grams (3 to 6 words) in the text.
+    * **CountVectorizer:** Used to count the occurrences of specific n-grams (2 to 3 words).
 
-Gradient boosting models for regression on essay scores.
+4.  **Model Integration:**
+    * **Deberta Model:** A pre-trained Deberta-v3-large model is fine-tuned and its predictions are used as meta-features for the LightGBM model. This allows the LightGBM model to leverage the deep semantic understanding of the neural network.
+    * **LightGBM Model:** An LGBMRegressor is trained using the engineered features and the Deberta predictions. A custom objective function (Quadratic Weighted Kappa) is used to optimize the model directly for the competition metric.
 
-Evaluation using Quadratic Weighted Kappa (QWK), the standard metric in AES tasks.
+5.  **Training & Cross-Validation:**
+    * A 15-fold Stratified K-Fold cross-validation strategy is employed to train multiple LightGBM models, ensuring the model's robustness and preventing overfitting.
 
-Achieved QWK ≈ 0.8331 on benchmark dataset.
+### Performance Breakdown
 
-📊 Results
-
-Metric: Quadratic Weighted Kappa (QWK)
-
-Best Score: ~0.8331
-
-Demonstrates strong alignment with human grading.
+| Stage | LB Score |
+| :--- | :---: |
+| Deberta Ensemble | 0.807 |
+| LGBM with Features | 0.811 |
+| LGBM + Deberta (as features) | 0.811 |
+| LGBM + Deberta + CountVectorizer | 0.812 |
+| LGBM + Deberta + TfidfVectorizer + CountVectorizer | 0.816 |
+| LGBM + Deberta + TfidfVectorizer + CountVectorizer + more features | **0.818** |
